@@ -1,13 +1,22 @@
 <script setup>
+/**
+ * Shared body for the FormKit variants (template-driven and schema-driven).
+ *
+ * Everything that doesn't depend on HOW the fields are declared lives here: the
+ * <FormKit type="form"> wrapper, form-level messages, the submitter + DRF error
+ * handling, autofill, and the submit button. Each variant supplies only the
+ * fields, via the default slot — as <FormKit> elements (template) or a
+ * <FormKitSchema> (schema). The field NAMES must match what fillSample / the
+ * submitter expect (username, email, password, password_confirm, role, bio,
+ * accept_terms).
+ */
 import { ref } from 'vue'
 import { getNode } from '@formkit/core'
+import { FormKitMessages } from '@formkit/vue'
 
 import { api } from '@/shared/api.js'
 import { makeSampleUser } from '@/shared/sampleData.js'
 import { FormKitSubmitter } from './FormKitSubmitter.js'
-
-// FormKit validation is expressed via the `validation` prop on each input
-// (string DSL). Cross-field password match uses the `confirm` rule.
 
 const successMessage = ref('')
 
@@ -51,19 +60,14 @@ function fillSample() {
     accept_terms: sample.acceptTerms,
   })
 }
-
-const roleItems = [
-  { title: 'Viewer', value: 'viewer' },
-  { title: 'Editor', value: 'editor' },
-  { title: 'Admin', value: 'admin' },
-]
 </script>
 
 <template>
   <!--
     type="form" gives a submit button, loading state, and form-level error
     rendering. We pass :actions="false" and supply our own Vuetify button so the
-    UI stays consistent.
+    UI stays consistent. Fields come from the default slot (each variant differs
+    only there).
   -->
   <FormKit
     id="registerForm"
@@ -79,65 +83,7 @@ const roleItems = [
     <!-- Form-level (non_field_errors / detail) messages render here. -->
     <FormKitMessages />
 
-    <FormKit
-      type="vtext"
-      name="username"
-      label="Username"
-      validation="required|length:3,150"
-      :vuetify-props="{ autocomplete: 'username' }"
-    />
-
-    <FormKit
-      type="vtext"
-      name="email"
-      label="Email"
-      input-type="email"
-      validation="required|email"
-      :vuetify-props="{ autocomplete: 'email' }"
-    />
-
-    <FormKit
-      type="vtext"
-      name="password"
-      label="Password"
-      input-type="password"
-      validation="required|length:8"
-      :vuetify-props="{ autocomplete: 'new-password' }"
-    />
-
-    <FormKit
-      type="vtext"
-      name="password_confirm"
-      label="Confirm password"
-      input-type="password"
-      validation="required|confirm:password"
-      validation-label="Password confirmation"
-      :vuetify-props="{ autocomplete: 'new-password' }"
-    />
-
-    <FormKit
-      type="vselect"
-      name="role"
-      label="Role"
-      validation="required"
-      :items="roleItems"
-    />
-
-    <FormKit
-      type="vtextarea"
-      name="bio"
-      label="Bio"
-      validation="length:0,500"
-      :vuetify-props="{ autoGrow: true, rows: 3 }"
-    />
-
-    <FormKit
-      type="vcheckbox"
-      name="accept_terms"
-      label="I accept the terms and conditions"
-      validation="accepted"
-      :value="false"
-    />
+    <slot />
 
     <div class="d-flex flex-column ga-2">
       <v-btn

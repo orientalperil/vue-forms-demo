@@ -10,7 +10,8 @@ const tabs = [
   { value: 'veevalidate-yup', label: 'VeeValidate · Yup' },
   { value: 'veevalidate-valibot', label: 'VeeValidate · Valibot' },
   { value: 'veevalidate-rules', label: 'VeeValidate · Rules' },
-  { value: 'formkit', label: 'FormKit' },
+  { value: 'formkit-template', label: 'FormKit · Template' },
+  { value: 'formkit-schema', label: 'FormKit · Schema' },
   { value: 'tanstack', label: 'TanStack Form' },
   { value: 'regle', label: 'Regle' },
 ]

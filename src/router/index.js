@@ -4,7 +4,8 @@ import VeeValidateZodPage from '@/components/VeeValidateZodPage.vue'
 import VeeValidateYupPage from '@/components/VeeValidateYupPage.vue'
 import VeeValidateValibotPage from '@/components/VeeValidateValibotPage.vue'
 import VeeValidateRulesPage from '@/components/VeeValidateRulesPage.vue'
-import FormKitPage from '@/components/FormKitPage.vue'
+import FormKitTemplatePage from '@/components/FormKitTemplatePage.vue'
+import FormKitSchemaPage from '@/components/FormKitSchemaPage.vue'
 import TanStackPage from '@/components/TanStackPage.vue'
 import ReglePage from '@/components/ReglePage.vue'
 
@@ -22,7 +23,12 @@ const routes = [
     name: 'veevalidate-rules',
     component: VeeValidateRulesPage,
   },
-  { path: '/formkit', name: 'formkit', component: FormKitPage },
+  {
+    path: '/formkit-template',
+    name: 'formkit-template',
+    component: FormKitTemplatePage,
+  },
+  { path: '/formkit-schema', name: 'formkit-schema', component: FormKitSchemaPage },
   { path: '/tanstack', name: 'tanstack', component: TanStackPage },
   { path: '/regle', name: 'regle', component: ReglePage },
 ]

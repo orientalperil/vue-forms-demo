@@ -1,6 +1,6 @@
 import { defaultConfig } from '@formkit/vue'
 import { createInput } from '@formkit/vue'
-import VuetifyInput from '@/forms/formkit/VuetifyInput.vue'
+import VuetifyInput from '@/forms/formkit-shared/VuetifyInput.vue'
 
 // Register the Vuetify bridge once and expose it under several friendly type
 // names so the form schema reads naturally (type="vtext", "vselect", ...).
