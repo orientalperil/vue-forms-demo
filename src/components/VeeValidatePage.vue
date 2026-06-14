@@ -5,8 +5,8 @@ import RegisterForm from '@/forms/veevalidate/RegisterForm.vue'
 
 <template>
   <FormPage
-    title="VeeValidate"
-    tagline="useForm + useField, headless. Zod schema validation. DRF field errors via setErrors; non-field errors in a separate ref."
+    title="VeeValidate · Zod"
+    tagline="useForm + useField, headless. Zod schema validation (via @vee-validate/zod). DRF field errors via setErrors; non-field errors in a separate ref."
     docs-url="https://vee-validate.logaretm.com/v4/"
   >
     <RegisterForm />
