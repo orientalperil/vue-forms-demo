@@ -1,6 +1,6 @@
 <script setup>
 import FormPage from '@/components/FormPage.vue'
-import RegisterForm from '@/forms/veevalidate/RegisterForm.vue'
+import RegisterForm from '@/forms/veevalidate-zod/RegisterForm.vue'
 </script>
 
 <template>

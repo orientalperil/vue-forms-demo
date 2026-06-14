@@ -6,7 +6,7 @@ const route = useRoute()
 const router = useRouter()
 
 const tabs = [
-  { value: 'veevalidate', label: 'VeeValidate · Zod' },
+  { value: 'veevalidate-zod', label: 'VeeValidate · Zod' },
   { value: 'veevalidate-yup', label: 'VeeValidate · Yup' },
   { value: 'veevalidate-valibot', label: 'VeeValidate · Valibot' },
   { value: 'veevalidate-rules', label: 'VeeValidate · Rules' },

@@ -4,7 +4,7 @@ import { useForm, useField } from 'vee-validate'
 
 import { api } from '@/shared/api.js'
 import { makeSampleUser } from '@/shared/sampleData.js'
-import { VeeValidateSubmitter } from '../veevalidate/VeeValidateSubmitter.js'
+import { VeeValidateSubmitter } from '../veevalidate-zod/VeeValidateSubmitter.js'
 // Registers the global rules + messages this form references by name.
 import './rules.js'
 

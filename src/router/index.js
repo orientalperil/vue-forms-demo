@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import VeeValidatePage from '@/components/VeeValidatePage.vue'
+import VeeValidateZodPage from '@/components/VeeValidateZodPage.vue'
 import VeeValidateYupPage from '@/components/VeeValidateYupPage.vue'
 import VeeValidateValibotPage from '@/components/VeeValidateValibotPage.vue'
 import VeeValidateRulesPage from '@/components/VeeValidateRulesPage.vue'
@@ -9,8 +9,8 @@ import TanStackPage from '@/components/TanStackPage.vue'
 import ReglePage from '@/components/ReglePage.vue'
 
 const routes = [
-  { path: '/', redirect: '/veevalidate' },
-  { path: '/veevalidate', name: 'veevalidate', component: VeeValidatePage },
+  { path: '/', redirect: '/veevalidate-zod' },
+  { path: '/veevalidate-zod', name: 'veevalidate-zod', component: VeeValidateZodPage },
   { path: '/veevalidate-yup', name: 'veevalidate-yup', component: VeeValidateYupPage },
   {
     path: '/veevalidate-valibot',

@@ -6,7 +6,7 @@ import { object, string, boolean, ref as yupRef } from 'yup'
 
 import { api } from '@/shared/api.js'
 import { makeSampleUser } from '@/shared/sampleData.js'
-import { VeeValidateSubmitter } from '../veevalidate/VeeValidateSubmitter.js'
+import { VeeValidateSubmitter } from '../veevalidate-zod/VeeValidateSubmitter.js'
 
 // --- Schema -----------------------------------------------------------------
 // Same shape as the Zod example, expressed with Yup. The headless form code
