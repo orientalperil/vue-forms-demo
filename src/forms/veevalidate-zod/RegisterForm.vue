@@ -14,7 +14,11 @@ const schema = z
     role: z.enum(['viewer', 'editor', 'admin'], {
       errorMap: () => ({ message: 'Pick a role' }),
     }),
-    bio: z.string().max(500, 'Keep it under 500 characters').optional().or(z.literal('')),
+    // Nested to match the DRF payload ({ profile: { bio } }); the field path is
+    // `profile.bio`, so the backend's nested serializer error resolves onto it.
+    profile: z.object({
+      bio: z.string().max(500, 'Keep it under 500 characters').optional().or(z.literal('')),
+    }),
     acceptTerms: z.literal(true, {
       errorMap: () => ({ message: 'You must accept the terms' }),
     }),

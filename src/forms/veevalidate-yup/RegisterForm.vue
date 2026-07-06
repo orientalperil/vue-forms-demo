@@ -18,7 +18,11 @@ const schema = object({
   role: string()
     .required('Pick a role')
     .oneOf(['viewer', 'editor', 'admin'], 'Pick a role'),
-  bio: string().max(500, 'Keep it under 500 characters'),
+  // Nested to match the DRF payload ({ profile: { bio } }); the field path is
+  // `profile.bio`, so the backend's nested serializer error resolves onto it.
+  profile: object({
+    bio: string().max(500, 'Keep it under 500 characters'),
+  }),
   acceptTerms: boolean().oneOf([true], 'You must accept the terms'),
 })
 

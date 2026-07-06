@@ -18,7 +18,11 @@ const schema = v.pipe(
     password: v.pipe(v.string(), v.minLength(8, 'At least 8 characters')),
     passwordConfirm: v.string(),
     role: v.picklist(['viewer', 'editor', 'admin'], 'Pick a role'),
-    bio: v.pipe(v.string(), v.maxLength(500, 'Keep it under 500 characters')),
+    // Nested to match the DRF payload ({ profile: { bio } }); the field path is
+    // `profile.bio`, so the backend's nested serializer error resolves onto it.
+    profile: v.object({
+      bio: v.pipe(v.string(), v.maxLength(500, 'Keep it under 500 characters')),
+    }),
     acceptTerms: v.literal(true, 'You must accept the terms'),
   }),
   v.forward(

@@ -33,7 +33,7 @@ const veeForm = useForm({
     password: '',
     passwordConfirm: '',
     role: undefined,
-    bio: '',
+    profile: { bio: '' },
     acceptTerms: false,
   },
 })
@@ -56,7 +56,10 @@ const { value: passwordConfirm, errorMessage: passwordConfirmError } = useField(
   props.fieldRules.passwordConfirm,
 )
 const { value: role, errorMessage: roleError } = useField('role', props.fieldRules.role)
-const { value: bio, errorMessage: bioError } = useField('bio', props.fieldRules.bio)
+const { value: bio, errorMessage: bioError } = useField(
+  'profile.bio',
+  props.fieldRules.bio,
+)
 const { value: acceptTerms, errorMessage: acceptTermsError } = useField(
   'acceptTerms',
   props.fieldRules.acceptTerms,
@@ -74,7 +77,7 @@ class RegisterSubmitter extends VeeValidateSubmitter {
       password: values.password,
       password_confirm: values.passwordConfirm,
       role: values.role,
-      profile: { bio: values.bio },
+      profile: values.profile, // { bio } — nested field profile.bio
       accept_terms: values.acceptTerms,
     })
   }
@@ -92,7 +95,9 @@ const onSubmit = handleSubmit((values) => {
 })
 
 function fillSample() {
-  veeForm.setValues(makeSampleUser())
+  const { bio, ...sample } = makeSampleUser()
+  // bio lives at the nested path profile.bio (matches the DRF payload).
+  veeForm.setValues({ ...sample, profile: { bio } })
 }
 
 const roleItems = [
