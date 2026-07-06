@@ -24,7 +24,7 @@ function emptyState() {
     password: '',
     passwordConfirm: '',
     role: null,
-    bio: '',
+    profile: { bio: '' },
     acceptTerms: false,
   }
 }
@@ -58,8 +58,10 @@ const { r$ } = useRegle(
     role: {
       required: withMessage(required, 'Pick a role'),
     },
-    bio: {
-      maxLength: withMessage(maxLength(500), 'Keep it under 500 characters'),
+    profile: {
+      bio: {
+        maxLength: withMessage(maxLength(500), 'Keep it under 500 characters'),
+      },
     },
     acceptTerms: {
       // No built-in "accepted" rule — an inline boolean check does it.
@@ -80,7 +82,7 @@ class RegisterSubmitter extends RegleSubmitter {
       password: values.password,
       password_confirm: values.passwordConfirm,
       role: values.role,
-      profile: { bio: values.bio },
+      profile: values.profile, // { bio } — nested field profile.bio
       accept_terms: values.acceptTerms,
     })
   }
@@ -114,7 +116,10 @@ async function onSubmit() {
 }
 
 function fillSample() {
-  Object.assign(state.value, makeSampleUser())
+  const { bio, ...sample } = makeSampleUser()
+  Object.assign(state.value, sample)
+  // bio lives at the nested path profile.bio (matches the DRF payload).
+  state.value.profile.bio = bio
 }
 
 const roleItems = [
@@ -179,9 +184,9 @@ const roleItems = [
     />
 
     <v-textarea
-      v-model="state.bio"
+      v-model="state.profile.bio"
       label="Bio"
-      :error-messages="r$.bio.$errors"
+      :error-messages="r$.profile.bio.$errors"
       auto-grow
       rows="3"
     />
