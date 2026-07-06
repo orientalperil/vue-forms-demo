@@ -46,18 +46,23 @@ const current = computed({
 /*
  * The FormKit variants bridge every field to a Vuetify component that renders
  * its own label AND its own error messages (via :label / :error-messages in
- * VuetifyInput). FormKit's default input schema still emits its own label, help,
- * and messages sections for each field, producing a doubled label and an
- * unstyled duplicate of every error. Hide FormKit's per-field sections so
- * Vuetify is the sole renderer.
- *
- * Scoped to .formkit-outer (the per-field wrapper) so the form-level
- * <FormKitMessages> — which surfaces DRF non_field_errors / detail and lives
- * outside any .formkit-outer — is left intact.
+ * VuetifyInput). FormKit's default input schema still emits its own label and
+ * help sections per field, producing a doubled label. Hide them so Vuetify is
+ * the sole renderer.
  */
 .formkit-outer .formkit-label,
-.formkit-outer .formkit-help,
-.formkit-outer .formkit-messages {
+.formkit-outer .formkit-help {
+  display: none;
+}
+
+/*
+ * FormKit renders unstyled message lists both per-field (in .formkit-outer) and
+ * at the form level (type="form" appends one under .formkit-form for
+ * non_field_errors / detail). Everything is already shown by Vuetify — field
+ * errors via :error-messages, form-level errors via our <v-alert> — so hide
+ * FormKit's own lists everywhere to avoid unstyled duplicates.
+ */
+.formkit-messages {
   display: none;
 }
 </style>
