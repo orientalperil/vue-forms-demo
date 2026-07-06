@@ -17,7 +17,7 @@ class RegisterSubmitter extends TanStackSubmitter {
       password: value.password,
       password_confirm: value.passwordConfirm,
       role: value.role,
-      profile: { bio: value.bio },
+      profile: value.profile, // { bio } — the nested `profile.bio` field
       accept_terms: value.acceptTerms,
     })
   }
@@ -37,7 +37,7 @@ const form = useForm({
     password: '',
     passwordConfirm: '',
     role: null,
-    bio: '',
+    profile: { bio: '' },
     acceptTerms: false,
   },
   validators: {
@@ -58,10 +58,12 @@ const formError = form.useStore((state) => {
 })
 
 function fillSample() {
-  const sample = makeSampleUser()
+  const { bio, ...sample } = makeSampleUser()
   for (const [name, value] of Object.entries(sample)) {
     form.setFieldValue(name, value)
   }
+  // bio lives at the nested path profile.bio (matches the DRF payload).
+  form.setFieldValue('profile.bio', bio)
 }
 
 const roleItems = [
@@ -204,7 +206,7 @@ function toMessages(errors) {
     </form.Field>
 
     <form.Field
-      name="bio"
+      name="profile.bio"
       :validators="{
         onChange: ({ value }) =>
           value && value.length > 500 ? 'Keep it under 500 characters' : undefined,
