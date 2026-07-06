@@ -12,7 +12,6 @@
  */
 import { ref } from 'vue'
 import { getNode } from '@formkit/core'
-import { FormKitMessages } from '@formkit/vue'
 
 import { api } from '@/shared/api.js'
 import { makeSampleUser } from '@/shared/sampleData.js'
@@ -74,14 +73,27 @@ function fillSample() {
     type="form"
     :actions="false"
     @submit="onSubmit"
-    #default="{ state }"
+    #default="{ state, messages }"
   >
     <v-alert v-if="successMessage" type="success" variant="tonal" class="mb-4">
       {{ successMessage }}
     </v-alert>
 
-    <!-- Form-level (non_field_errors / detail) messages render here. -->
-    <FormKitMessages />
+    <!--
+      Form-level messages: FormKit's "incomplete" summary on a failed submit and
+      DRF non_field_errors / detail (set via node.setErrors). These have no
+      field to attach to, so render them here in a styled Vuetify alert instead
+      of FormKit's default (unstyled) <FormKitMessages> list. `messages` comes
+      from the form node's context and updates reactively as FormKit does.
+    -->
+    <v-alert
+      v-if="Object.keys(messages).length"
+      type="error"
+      variant="tonal"
+      class="mb-4"
+    >
+      <div v-for="m in messages" :key="m.key">{{ m.value }}</div>
+    </v-alert>
 
     <slot />
 
