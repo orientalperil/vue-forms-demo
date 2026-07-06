@@ -15,4 +15,6 @@ app.use(router)
 // It coexists fine with the other libraries, which are component-scoped.
 app.use(formkitPlugin, formkitConfig)
 
-app.mount('#app')
+router.isReady().then(() => {
+  app.mount('#app')
+})
