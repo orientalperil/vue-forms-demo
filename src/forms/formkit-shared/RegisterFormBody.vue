@@ -27,7 +27,7 @@ class RegisterSubmitter extends FormKitSubmitter {
       password: data.password,
       password_confirm: data.password_confirm,
       role: data.role,
-      profile: { bio: data.bio },
+      profile: data.profile, // { bio } — nested via the `profile` group
       accept_terms: data.accept_terms,
     })
   }
@@ -55,7 +55,7 @@ function fillSample() {
     password: sample.password,
     password_confirm: sample.passwordConfirm,
     role: sample.role,
-    bio: sample.bio,
+    profile: { bio: sample.bio },
     accept_terms: sample.acceptTerms,
   })
 }

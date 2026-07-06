@@ -56,13 +56,20 @@ const roleItems = [
       :items="roleItems"
     />
 
-    <FormKit
-      type="vtextarea"
-      name="bio"
-      label="Bio"
-      validation="length:0,500"
-      :vuetify-props="{ autoGrow: true, rows: 3 }"
-    />
+    <!--
+      Nested under a `profile` group so the field's path is `profile.bio` — it
+      matches the POST payload ({ profile: { bio } }) and lets the backend's
+      nested serializer error ({ profile: { bio: [...] } }) resolve to it.
+    -->
+    <FormKit type="group" name="profile">
+      <FormKit
+        type="vtextarea"
+        name="bio"
+        label="Bio"
+        validation="length:0,500"
+        :vuetify-props="{ autoGrow: true, rows: 3 }"
+      />
+    </FormKit>
 
     <FormKit
       type="vcheckbox"

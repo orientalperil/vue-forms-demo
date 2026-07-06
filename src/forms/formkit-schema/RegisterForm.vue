@@ -53,11 +53,21 @@ const registerSchema = [
     items: roleItems,
   },
   {
-    $formkit: 'vtextarea',
-    name: 'bio',
-    label: 'Bio',
-    validation: 'length:0,500',
-    vuetifyProps: { autoGrow: true, rows: 3 },
+    // Nested under a `profile` group so the field's path is `profile.bio`.
+    // That matches the DRF payload we POST ({ profile: { bio } }) and lets the
+    // backend's nested serializer error ({ profile: { bio: [...] } }) resolve
+    // back onto this field.
+    $formkit: 'group',
+    name: 'profile',
+    children: [
+      {
+        $formkit: 'vtextarea',
+        name: 'bio',
+        label: 'Bio',
+        validation: 'length:0,500',
+        vuetifyProps: { autoGrow: true, rows: 3 },
+      },
+    ],
   },
   {
     $formkit: 'vcheckbox',
