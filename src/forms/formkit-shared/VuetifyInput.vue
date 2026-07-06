@@ -16,9 +16,6 @@ import { VTextField, VTextarea, VSelect, VCheckbox } from 'vuetify/components'
 
 const props = defineProps({
   context: { type: Object, required: true },
-  // true  -> live: errors clear the moment FormKit updates a field's messages
-  // false -> stale: errors only refresh on a full re-render (e.g. a submit)
-  liveErrors: { type: Boolean, default: true },
 })
 
 const node = props.context.node
@@ -48,22 +45,16 @@ function collectErrors() {
 // `computed(() => ...context.messages)` doesn't reliably re-run: it refreshes on
 // a full re-render (e.g. a submit) but NOT when a single field's message is
 // cleared as the user edits it, leaving a corrected field showing a stale error.
-// When liveErrors is on we instead rebuild the list on FormKit's own message
-// events, which keeps Vuetify in sync exactly.
-let errorMessages
-if (props.liveErrors) {
-  const live = ref(collectErrors())
-  const refresh = () => (live.value = collectErrors())
-  const receipts = [
-    node.on('message-added', refresh),
-    node.on('message-removed', refresh),
-    node.on('message-updated', refresh),
-  ]
-  onBeforeUnmount(() => receipts.forEach((receipt) => node.off(receipt)))
-  errorMessages = live
-} else {
-  errorMessages = computed(collectErrors)
-}
+// Instead we rebuild the list on FormKit's own message events, which keeps
+// Vuetify in sync exactly.
+const errorMessages = ref(collectErrors())
+const refresh = () => (errorMessages.value = collectErrors())
+const receipts = [
+  node.on('message-added', refresh),
+  node.on('message-removed', refresh),
+  node.on('message-updated', refresh),
+]
+onBeforeUnmount(() => receipts.forEach((receipt) => node.off(receipt)))
 
 // Map the FormKit input `type` (vtext/vselect/...) straight to a Vuetify
 // component. The type is the single source of truth — no separate prop needed.
