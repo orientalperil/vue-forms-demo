@@ -8,29 +8,62 @@
  *
  * `context` is injected by FormKit and exposes:
  *   context.value         - current value
- *   context.node.input()  - commit a new value
- *   context.messages      - validation + backend messages (keyed)
+ *   context.node          - the FormKitNode (input(), store, events, ...)
  *   context.label, etc.
  */
-import { computed } from 'vue'
+import { ref, computed, onBeforeUnmount } from 'vue'
 import { VTextField, VTextarea, VSelect, VCheckbox } from 'vuetify/components'
 
 const props = defineProps({
   context: { type: Object, required: true },
+  // true  -> live: errors clear the moment FormKit updates a field's messages
+  // false -> stale: errors only refresh on a full re-render (e.g. a submit)
+  liveErrors: { type: Boolean, default: true },
 })
+
+const node = props.context.node
 
 const model = computed({
   get: () => props.context.value,
-  set: (val) => props.context.node.input(val),
+  set: (val) => node.input(val),
 })
 
-// FormKit stores messages in context.messages keyed by type; surface the
-// visible error ones as plain strings for Vuetify's :error-messages.
-const errorMessages = computed(() =>
-  Object.values(props.context.messages ?? {})
-    .filter((m) => m.visible && m.type === 'error')
-    .map((m) => m.value),
-)
+// Surface FormKit's messages as plain strings for Vuetify's :error-messages.
+//
+// Two kinds of messages need to show as errors here:
+//   - type 'validation' -> client-side rule failures (required, email, ...)
+//   - type 'error'      -> messages set via node.setErrors() (our DRF backend)
+//
+// Read from context.messages (NOT node.store): the store keeps every message
+// with a raw `visible` flag that ignores validationVisibility, so it would show
+// "required" errors before the user ever touches the field. context.messages is
+// FormKit's display-gated projection, so it's empty until a message should show.
+function collectErrors() {
+  return Object.values(props.context.messages ?? {})
+    .filter((m) => m.visible && (m.type === 'validation' || m.type === 'error'))
+    .map((m) => m.value)
+}
+
+// FormKit mutates its messages outside of Vue's reactivity, so a plain
+// `computed(() => ...context.messages)` doesn't reliably re-run: it refreshes on
+// a full re-render (e.g. a submit) but NOT when a single field's message is
+// cleared as the user edits it, leaving a corrected field showing a stale error.
+// When liveErrors is on we instead rebuild the list on FormKit's own message
+// events, which keeps Vuetify in sync exactly.
+let errorMessages
+if (props.liveErrors) {
+  const live = ref(collectErrors())
+  const refresh = () => (live.value = collectErrors())
+  const receipts = [
+    node.on('message-added', refresh),
+    node.on('message-removed', refresh),
+    node.on('message-updated', refresh),
+  ]
+  onBeforeUnmount(() => receipts.forEach((receipt) => node.off(receipt)))
+  errorMessages = live
+} else {
+  errorMessages = computed(collectErrors)
+}
 
 // Map the FormKit input `type` (vtext/vselect/...) straight to a Vuetify
 // component. The type is the single source of truth — no separate prop needed.
@@ -41,7 +74,7 @@ const componentMap = {
   vcheckbox: VCheckbox,
 }
 const component = computed(
-  () => componentMap[props.context.node.props.type] ?? VTextField,
+  () => componentMap[node.props.type] ?? VTextField,
 )
 </script>
 
@@ -50,10 +83,10 @@ const component = computed(
     :is="component"
     v-model="model"
     :label="context.label"
-    :type="context.node.props.inputType"
-    :items="context.node.props.items"
+    :type="node.props.inputType"
+    :items="node.props.items"
     :error-messages="errorMessages"
-    v-bind="context.node.props.vuetifyProps"
+    v-bind="node.props.vuetifyProps"
     @blur="context.handlers.blur"
   />
 </template>
