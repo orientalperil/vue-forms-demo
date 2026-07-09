@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import ScenarioPicker from '@/components/ScenarioPicker.vue'
 
 defineProps({

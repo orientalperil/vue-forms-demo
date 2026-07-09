@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 // Template-driven FormKit: fields are written as <FormKit> elements, with
 // validation in the string DSL on each. All wiring is shared in RegisterFormBody.
 import RegisterFormBody from '@/forms/formkit-shared/RegisterFormBody.vue'

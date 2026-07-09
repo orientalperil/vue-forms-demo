@@ -7,6 +7,22 @@
  * username/email are randomized) so repeated submits don't collide.
  */
 
+import type { Role } from './types.ts'
+
+/**
+ * A filled-in sample. Note `bio` is flat here (not nested under `profile`); each
+ * form variant lifts it onto `profile.bio` itself after destructuring.
+ */
+export interface SampleUser {
+  username: string
+  email: string
+  password: string
+  passwordConfirm: string
+  role: Role
+  bio: string
+  acceptTerms: boolean
+}
+
 const FIRST_NAMES = [
   'Ava', 'Noah', 'Mia', 'Liam', 'Ella', 'Owen', 'Zoe', 'Leo', 'Iris', 'Kai',
 ]
@@ -19,13 +35,13 @@ const BIOS = [
   'Backend dev exploring Vue. Building side projects on the weekend.',
   'Full-stack tinkerer interested in design systems and DX.',
 ]
-const ROLES = ['viewer', 'editor', 'admin']
+const ROLES: Role[] = ['viewer', 'editor', 'admin']
 
-function pick(list) {
+function pick<T>(list: T[]): T {
   return list[Math.floor(Math.random() * list.length)]
 }
 
-export function makeSampleUser() {
+export function makeSampleUser(): SampleUser {
   const first = pick(FIRST_NAMES)
   const last = pick(LAST_NAMES)
   const suffix = Math.floor(100 + Math.random() * 900)

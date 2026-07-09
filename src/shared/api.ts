@@ -7,7 +7,7 @@
  *
  * --- To use a real Django REST Framework backend ---
  * 1. Uncomment the axios block below and delete the mock line.
- * 2. Enable the /api proxy in vite.config.js (or set VITE_API_BASE_URL).
+ * 2. Enable the /api proxy in vite.config.ts (or set VITE_API_BASE_URL).
  *
  * import axios from 'axios'
  * export const api = axios.create({
@@ -17,6 +17,7 @@
  *   xsrfHeaderName: 'X-CSRFToken',
  * })
  */
-import { mockApi } from './mockBackend.js'
+import { mockApi } from './mockBackend.ts'
+import type { ApiClient } from './types.ts'
 
-export const api = mockApi
+export const api: ApiClient = mockApi

@@ -20,17 +20,22 @@
  * Note: TanStack's field error map stores one value per channel, so multiple
  * messages for a field are joined with a space here.
  */
-export class TanStackSubmitter {
+import type { ApiError, RegisterFormValues } from '@/shared/types.ts'
+
+/** The { form, fields } shape TanStack routes to its form/field error maps. */
+export interface TanStackSubmitError {
+  form?: string
+  fields?: Record<string, string>
+}
+
+export class TanStackSubmitter<TValue = RegisterFormValues> {
   constructor() {
     this.submit = this.submit.bind(this)
   }
 
-  /**
-   * Convert a DRF error response into TanStack's { form, fields } shape.
-   * @returns {{ form?: string, fields?: Record<string,string> }}
-   */
-  parseError(error) {
-    const data = error?.response?.data
+  /** Convert a DRF error response into TanStack's { form, fields } shape. */
+  parseError(error: unknown): TanStackSubmitError {
+    const data = (error as ApiError | undefined)?.response?.data
     if (!data) {
       return { form: 'Something went wrong. Please try again.' }
     }
@@ -43,12 +48,12 @@ export class TanStackSubmitter {
     // Case 2 + 3: serializer errors.
     const { non_field_errors: nonField, ...fieldErrors } = data
 
-    const result = {}
+    const result: TanStackSubmitError = {}
     if (nonField) {
       result.form = Array.isArray(nonField) ? nonField.join(' ') : String(nonField)
     }
 
-    const fields = {}
+    const fields: Record<string, string> = {}
     for (const [field, messages] of Object.entries(fieldErrors)) {
       if (Array.isArray(messages)) {
         fields[field] = messages.join(' ')
@@ -69,10 +74,10 @@ export class TanStackSubmitter {
     return result
   }
 
-  async action(_value) {}
-  async success(_value) {}
-  async error(_error) {}
-  async finally() {}
+  async action(_value: TValue): Promise<void> {}
+  async success(_value: TValue): Promise<void> {}
+  async error(_error: unknown): Promise<void> {}
+  async finally(): Promise<void> {}
 
   /**
    * Use as the form's onSubmitAsync validator:
@@ -80,7 +85,7 @@ export class TanStackSubmitter {
    * Returns null on success, or the { form, fields } object on failure.
    * TanStack manages isSubmitting/canSubmit around this automatically.
    */
-  async submit(value) {
+  async submit(value: TValue): Promise<TanStackSubmitError | null> {
     try {
       await this.action(value)
       await this.success(value)

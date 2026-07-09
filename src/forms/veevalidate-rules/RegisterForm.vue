@@ -1,7 +1,7 @@
-<script setup>
+<script setup lang="ts">
 import RegisterFormBody from '@/forms/veevalidate-shared/RegisterFormBody.vue'
 // Registers the global rules + messages referenced by name below.
-import './rules.js'
+import './rules.ts'
 
 // No schema this time: each field gets a rule string built from VeeValidate's
 // native global rules (required, min, max, email, confirmed, plus our is_true).

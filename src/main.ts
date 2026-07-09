@@ -1,9 +1,9 @@
 import { createApp } from 'vue'
 
 import App from './App.vue'
-import { vuetify } from './plugins/vuetify.js'
-import { formkitConfig } from './plugins/formkit.js'
-import { router } from './router/index.js'
+import { vuetify } from './plugins/vuetify.ts'
+import { formkitConfig } from './plugins/formkit.ts'
+import { router } from './router/index.ts'
 
 import { plugin as formkitPlugin } from '@formkit/vue'
 

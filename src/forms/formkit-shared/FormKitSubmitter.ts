@@ -15,21 +15,24 @@
  * `messageBag.prepend` handled top-level messages and per-element message bags
  * handled field messages.
  */
-export class FormKitSubmitter {
-  /**
-   * @param {import('@formkit/core').FormKitNode} node  the form's root node
-   */
-  constructor(node) {
+import type { FormKitNode } from '@formkit/core'
+
+import type { ApiError } from '@/shared/types.ts'
+
+export class FormKitSubmitter<TData = Record<string, unknown>> {
+  node: FormKitNode | undefined
+
+  constructor(node: FormKitNode | undefined) {
     this.node = node
     this.submit = this.submit.bind(this)
   }
 
-  setNode(node) {
+  setNode(node: FormKitNode | undefined) {
     this.node = node
   }
 
-  handleError(error) {
-    const data = error?.response?.data
+  handleError(error: unknown) {
+    const data = (error as ApiError | undefined)?.response?.data
     if (!data) {
       this.node?.setErrors(['Something went wrong. Please try again.'])
       return
@@ -44,7 +47,7 @@ export class FormKitSubmitter {
     // Case 2 + 3: serializer errors.
     const { non_field_errors: nonField, ...fieldErrors } = data
 
-    const formLevel = nonField
+    const formLevel: string[] = nonField
       ? Array.isArray(nonField)
         ? nonField
         : [nonField]
@@ -52,7 +55,7 @@ export class FormKitSubmitter {
 
     // FormKit keys inputErrors by the input's `name`. Flatten one level of
     // nesting into dotted names (matches FormKit group/nested input names).
-    const inputErrors = {}
+    const inputErrors: Record<string, string[]> = {}
     for (const [field, messages] of Object.entries(fieldErrors)) {
       if (Array.isArray(messages)) {
         inputErrors[field] = messages
@@ -72,10 +75,10 @@ export class FormKitSubmitter {
     this.node?.setErrors(formLevel, inputErrors)
   }
 
-  async action(_data) {}
-  async success(_data) {}
-  async error(_error) {}
-  async finally() {}
+  async action(_data: TData): Promise<void> {}
+  async success(_data: TData): Promise<void> {}
+  async error(_error: unknown): Promise<void> {}
+  async finally(): Promise<void> {}
 
   /**
    * Pass as the form's @submit handler:
@@ -84,7 +87,7 @@ export class FormKitSubmitter {
    * loading/disabled state for the duration of the returned promise, and passes
    * (data, node).
    */
-  async submit(data, node) {
+  async submit(data: TData, node?: FormKitNode) {
     if (node) this.node = node
     this.node?.clearErrors()
     try {

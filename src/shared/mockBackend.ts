@@ -12,10 +12,12 @@
  * an APIException with `detail`, or a network failure.
  *
  * To use a REAL backend instead: delete this file, swap the import in
- * src/shared/api.js back to a plain axios instance, and (optionally) enable the
- * dev proxy in vite.config.js.
+ * src/shared/api.ts back to a plain axios instance, and (optionally) enable the
+ * dev proxy in vite.config.ts.
  */
 import { ref } from 'vue'
+
+import type { ApiClient, ApiError, DrfErrorData } from './types.ts'
 
 export const SCENARIOS = {
   SUCCESS: 'success',
@@ -41,13 +43,13 @@ export function useScenario() {
   return scenario
 }
 
-function delay(ms) {
+function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 // Build an axios-style error so `error.response.data` works downstream.
-function makeAxiosError(status, data) {
-  const err = new Error(`Request failed with status code ${status}`)
+function makeAxiosError(status: number, data: DrfErrorData): ApiError {
+  const err = new Error(`Request failed with status code ${status}`) as Error & ApiError
   err.isAxiosError = true
   err.response = { status, data }
   return err
@@ -57,7 +59,7 @@ function makeAxiosError(status, data) {
  * Mimics axios.post. Resolves on success, rejects with an axios-shaped error
  * otherwise — driven by the currently selected scenario.
  */
-async function post(_url, _body) {
+async function post(_url: string, _body: Record<string, unknown>) {
   await delay(700) // simulate latency so loading states are visible
 
   switch (scenario.value) {
@@ -94,7 +96,7 @@ async function post(_url, _body) {
     case SCENARIOS.NETWORK:
     default: {
       // A network error in axios has no `response`.
-      const err = new Error('Network Error')
+      const err = new Error('Network Error') as Error & ApiError
       err.isAxiosError = true
       err.request = {}
       throw err
@@ -102,4 +104,4 @@ async function post(_url, _body) {
   }
 }
 
-export const mockApi = { post }
+export const mockApi: ApiClient = { post }

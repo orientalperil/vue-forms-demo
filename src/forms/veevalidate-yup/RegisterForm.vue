@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { toTypedSchema } from '@vee-validate/yup'
 import { object, string, boolean, ref as yupRef } from 'yup'
 

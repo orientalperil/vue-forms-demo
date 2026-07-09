@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router'
 import { computed } from 'vue'
 
@@ -16,9 +16,11 @@ const tabs = [
   { value: 'regle', label: 'Regle' },
 ]
 
-const current = computed({
-  get: () => route.name,
-  set: (name) => router.push({ name }),
+const current = computed<string | undefined>({
+  get: () => route.name as string | undefined,
+  set: (name) => {
+    if (name) router.push({ name })
+  },
 })
 </script>
 

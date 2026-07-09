@@ -1,9 +1,9 @@
-<script setup>
+<script setup lang="ts">
 /**
  * Bridges a FormKit `context` to a Vuetify input. This is the headless pattern
  * for FormKit: FormKit owns state/validation/errors, Vuetify owns rendering.
  *
- * Registered as custom input types in src/plugins/formkit.js, so the form can
+ * Registered as custom input types in src/plugins/formkit.ts, so the form can
  * write <FormKit type="vtext" name="email" ... />.
  *
  * `context` is injected by FormKit and exposes:
@@ -12,10 +12,15 @@
  *   context.label, etc.
  */
 import { ref, computed, onBeforeUnmount } from 'vue'
+import type { Component, PropType } from 'vue'
 import { VTextField, VTextarea, VSelect, VCheckbox } from 'vuetify/components'
+import type { FormKitFrameworkContext } from '@formkit/core'
 
 const props = defineProps({
-  context: { type: Object, required: true },
+  context: {
+    type: Object as PropType<FormKitFrameworkContext>,
+    required: true,
+  },
 })
 
 const node = props.context.node
@@ -35,10 +40,10 @@ const model = computed({
 // with a raw `visible` flag that ignores validationVisibility, so it would show
 // "required" errors before the user ever touches the field. context.messages is
 // FormKit's display-gated projection, so it's empty until a message should show.
-function collectErrors() {
+function collectErrors(): string[] {
   return Object.values(props.context.messages ?? {})
     .filter((m) => m.visible && (m.type === 'validation' || m.type === 'error'))
-    .map((m) => m.value)
+    .map((m) => String(m.value))
 }
 
 // FormKit mutates its messages outside of Vue's reactivity, so a plain
@@ -58,13 +63,13 @@ onBeforeUnmount(() => receipts.forEach((receipt) => node.off(receipt)))
 
 // Map the FormKit input `type` (vtext/vselect/...) straight to a Vuetify
 // component. The type is the single source of truth — no separate prop needed.
-const componentMap = {
+const componentMap: Record<string, Component> = {
   vtext: VTextField,
   vtextarea: VTextarea,
   vselect: VSelect,
   vcheckbox: VCheckbox,
 }
-const component = computed(
+const component = computed<Component>(
   () => componentMap[node.props.type] ?? VTextField,
 )
 </script>

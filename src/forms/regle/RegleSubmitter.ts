@@ -19,19 +19,33 @@
  * Subclass and override action/success/error/finally — same contract as the
  * other Submitters.
  */
-export class RegleSubmitter {
-  /**
-   * @param {ReturnType<typeof import('@regle/core').useRegle>['r$']} r$
-   * @param {import('vue').Ref<string[]>} formError  ref for non-field messages
-   */
-  constructor(r$, formError) {
+import type { Ref } from 'vue'
+
+import type { ApiError, RegisterFormValues } from '@/shared/types.ts'
+
+/** Regle's external-error tree: field -> messages, one level of nesting deep. */
+type RegleErrorTree = Record<string, string[] | Record<string, string[]>>
+
+/**
+ * The slice of Regle's `r$` this Submitter uses. Typing just the external-error
+ * setter structurally keeps the Submitter off Regle's heavily-generic `r$` type.
+ */
+interface RegleServerErrors {
+  $setExternalErrors(errors: RegleErrorTree): void
+}
+
+export class RegleSubmitter<TValues = RegisterFormValues> {
+  r$: RegleServerErrors
+  formError: Ref<string[]>
+
+  constructor(r$: RegleServerErrors, formError: Ref<string[]>) {
     this.r$ = r$
     this.formError = formError
     this.submit = this.submit.bind(this)
   }
 
-  handleError(error) {
-    const data = error?.response?.data
+  handleError(error: unknown) {
+    const data = (error as ApiError | undefined)?.response?.data
     if (!data) {
       // Network error, timeout, CORS, etc. — no structured body.
       this.formError.value = ['Something went wrong. Please try again.']
@@ -54,12 +68,12 @@ export class RegleSubmitter {
     // Build Regle's external-error tree. Each field maps to a string[]; a
     // nested serializer error (profile.bio) becomes a nested object, which
     // Regle merges into the matching field path.
-    const tree = {}
+    const tree: RegleErrorTree = {}
     for (const [field, messages] of Object.entries(fieldErrors)) {
       if (Array.isArray(messages)) {
         tree[field] = messages
       } else if (messages && typeof messages === 'object') {
-        const nested = {}
+        const nested: Record<string, string[]> = {}
         for (const [sub, subMessages] of Object.entries(messages)) {
           nested[sub] = Array.isArray(subMessages) ? subMessages : [subMessages]
         }
@@ -73,10 +87,10 @@ export class RegleSubmitter {
     }
   }
 
-  async action(_values) {}
-  async success(_values) {}
-  async error(_error) {}
-  async finally() {}
+  async action(_values: TValues): Promise<void> {}
+  async success(_values: TValues): Promise<void> {}
+  async error(_error: unknown): Promise<void> {}
+  async finally(): Promise<void> {}
 
   /**
    * Call after client validation passes (the component clears external errors
@@ -84,7 +98,7 @@ export class RegleSubmitter {
    *   const { valid, data } = await r$.$validate()
    *   if (valid) await submitter.submit(data)
    */
-  async submit(values) {
+  async submit(values: TValues) {
     this.formError.value = []
     try {
       await this.action(values)

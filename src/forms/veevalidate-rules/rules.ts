@@ -19,22 +19,38 @@ defineRule('max', max)
 defineRule('confirmed', confirmed)
 
 // No built-in "must be true" rule for the terms checkbox — define one inline.
-defineRule('is_true', (value) => value === true)
+defineRule('is_true', (value: unknown) => value === true)
+
+/**
+ * The slice of VeeValidate's message context a message needs. Mirrors the
+ * relevant fields of the (non-exported) `FieldValidationMetaInfo`, so the real
+ * context passed by `configure` is assignable to it.
+ */
+interface RuleMessageContext {
+  field: string
+  rule?: { name: string; params?: Record<string, unknown> | unknown[] }
+}
+type MessageFn = (ctx: RuleMessageContext) => string
+
+/** First positional rule param (e.g. the `3` in `min:3`), as a display string. */
+function firstParam(ctx: RuleMessageContext): string {
+  return String((ctx.rule?.params as unknown[] | undefined)?.[0])
+}
 
 // Friendly messages keyed by rule name. Native rules are field-agnostic, so
 // (unlike the schema variants) "required" reads the same on every field.
-const MESSAGES = {
+const MESSAGES: Record<string, string | MessageFn> = {
   required: 'This field is required',
   email: 'Enter a valid email address',
-  min: (ctx) => `At least ${ctx.rule.params[0]} characters`,
-  max: (ctx) => `Keep it under ${ctx.rule.params[0]} characters`,
+  min: (ctx) => `At least ${firstParam(ctx)} characters`,
+  max: (ctx) => `Keep it under ${firstParam(ctx)} characters`,
   confirmed: 'Passwords do not match',
   is_true: 'You must accept the terms',
 }
 
 configure({
   generateMessage: (ctx) => {
-    const msg = MESSAGES[ctx.rule?.name]
+    const msg = MESSAGES[ctx.rule?.name ?? '']
     return typeof msg === 'function' ? msg(ctx) : (msg ?? `${ctx.field} is invalid`)
   },
 })

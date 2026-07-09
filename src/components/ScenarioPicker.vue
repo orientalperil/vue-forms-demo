@@ -1,10 +1,10 @@
-<script setup>
+<script setup lang="ts">
 /**
  * Lets the user choose which DRF response the mock backend simulates, so every
  * error-handling path in each Submitter is demonstrable without a real server.
  */
 import { computed } from 'vue'
-import { useScenario, SCENARIOS, SCENARIO_LABELS } from '@/shared/mockBackend.js'
+import { useScenario, SCENARIOS, SCENARIO_LABELS } from '@/shared/mockBackend.ts'
 
 const scenario = useScenario()
 

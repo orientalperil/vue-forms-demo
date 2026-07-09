@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { toTypedSchema } from '@vee-validate/zod'
 import { z } from 'zod'
 

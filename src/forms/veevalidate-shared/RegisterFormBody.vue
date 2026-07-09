@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * Shared body for every VeeValidate variant (Zod / Yup / Valibot / native rules).
  *
@@ -12,27 +12,45 @@
  */
 import { ref } from 'vue'
 import { useForm, useField } from 'vee-validate'
+import type { TypedSchema } from 'vee-validate'
 
-import { api } from '@/shared/api.js'
-import { makeSampleUser } from '@/shared/sampleData.js'
-import { VeeValidateSubmitter } from './VeeValidateSubmitter.js'
+import { api } from '@/shared/api.ts'
+import { makeSampleUser } from '@/shared/sampleData.ts'
+import type { RegisterFormValues, Role } from '@/shared/types.ts'
+import { VeeValidateSubmitter } from './VeeValidateSubmitter.ts'
 
-const props = defineProps({
-  // Schema variants (Zod/Yup/Valibot) pass a typed schema here.
-  validationSchema: { type: Object, default: undefined },
-  // The native-rules variant passes per-field rule strings here instead.
-  fieldRules: { type: Object, default: () => ({}) },
-})
+/** Per-field rule strings for the native-rules variant, keyed by field name. */
+interface FieldRules {
+  username?: string
+  email?: string
+  password?: string
+  passwordConfirm?: string
+  role?: string
+  bio?: string
+  acceptTerms?: string
+}
+
+const props = withDefaults(
+  defineProps<{
+    // Schema variants (Zod/Yup/Valibot) pass a typed schema here. Each library
+    // infers a slightly different value type, so this stays the un-parameterized
+    // `TypedSchema` (i.e. `<any>`); the canonical shape is pinned on useForm below.
+    validationSchema?: TypedSchema
+    // The native-rules variant passes per-field rule strings here instead.
+    fieldRules?: FieldRules
+  }>(),
+  { validationSchema: undefined, fieldRules: () => ({}) },
+)
 
 // --- Headless form ----------------------------------------------------------
-const veeForm = useForm({
+const veeForm = useForm<RegisterFormValues>({
   validationSchema: props.validationSchema,
   initialValues: {
     username: '',
     email: '',
     password: '',
     passwordConfirm: '',
-    role: undefined,
+    role: null,
     profile: { bio: '' },
     acceptTerms: false,
   },
@@ -42,35 +60,41 @@ const { handleSubmit, isSubmitting } = veeForm
 // useField per input — the headless part. The optional second arg carries
 // per-field rules (only the native-rules variant uses it); schema variants
 // leave it undefined and validate through the form-level schema above.
-const { value: username, errorMessage: usernameError } = useField(
+const { value: username, errorMessage: usernameError } = useField<string>(
   'username',
   props.fieldRules.username,
 )
-const { value: email, errorMessage: emailError } = useField('email', props.fieldRules.email)
-const { value: password, errorMessage: passwordError } = useField(
+const { value: email, errorMessage: emailError } = useField<string>(
+  'email',
+  props.fieldRules.email,
+)
+const { value: password, errorMessage: passwordError } = useField<string>(
   'password',
   props.fieldRules.password,
 )
-const { value: passwordConfirm, errorMessage: passwordConfirmError } = useField(
+const { value: passwordConfirm, errorMessage: passwordConfirmError } = useField<string>(
   'passwordConfirm',
   props.fieldRules.passwordConfirm,
 )
-const { value: role, errorMessage: roleError } = useField('role', props.fieldRules.role)
-const { value: bio, errorMessage: bioError } = useField(
+const { value: role, errorMessage: roleError } = useField<Role | null>(
+  'role',
+  props.fieldRules.role,
+)
+const { value: bio, errorMessage: bioError } = useField<string>(
   'profile.bio',
   props.fieldRules.bio,
 )
-const { value: acceptTerms, errorMessage: acceptTermsError } = useField(
+const { value: acceptTerms, errorMessage: acceptTermsError } = useField<boolean>(
   'acceptTerms',
   props.fieldRules.acceptTerms,
 )
 
 // --- Submitter --------------------------------------------------------------
-const formError = ref([])
+const formError = ref<string[]>([])
 const successMessage = ref('')
 
-class RegisterSubmitter extends VeeValidateSubmitter {
-  async action(values) {
+class RegisterSubmitter extends VeeValidateSubmitter<RegisterFormValues> {
+  async action(values: RegisterFormValues) {
     await api.post('/users/', {
       username: values.username,
       email: values.email,

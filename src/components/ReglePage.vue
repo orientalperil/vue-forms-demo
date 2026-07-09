@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import FormPage from '@/components/FormPage.vue'
 import RegisterForm from '@/forms/regle/RegisterForm.vue'
 </script>

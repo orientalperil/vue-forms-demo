@@ -1,0 +1,16 @@
+{
+  // Extends Vue's recommended base (strict mode, bundler resolution, the
+  // Vue-specific JSX/verbatimModuleSyntax settings) and layers on this repo's
+  // `@` path alias plus Node types for vite.config.ts.
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    // vite.config.ts and mockBackend's setTimeout need the Node globals.
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.vue", "vite.config.ts", "env.d.ts"],
+  "exclude": ["node_modules", "dist"]
+}

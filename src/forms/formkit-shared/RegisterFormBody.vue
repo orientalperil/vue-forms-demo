@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * Shared body for the FormKit variants (template-driven and schema-driven).
  *
@@ -12,15 +12,20 @@
  */
 import { ref } from 'vue'
 import { getNode } from '@formkit/core'
+import type { FormKitNode } from '@formkit/core'
 
-import { api } from '@/shared/api.js'
-import { makeSampleUser } from '@/shared/sampleData.js'
-import { FormKitSubmitter } from './FormKitSubmitter.js'
+import { api } from '@/shared/api.ts'
+import { makeSampleUser } from '@/shared/sampleData.ts'
+import { FormKitSubmitter } from './FormKitSubmitter.ts'
 
 const successMessage = ref('')
 
-class RegisterSubmitter extends FormKitSubmitter {
-  async action(data) {
+// FormKit hands us a snake_case data bag (its field names); the values are
+// user-entered, so `unknown` until forwarded to the DRF payload.
+type FormKitData = Record<string, unknown>
+
+class RegisterSubmitter extends FormKitSubmitter<FormKitData> {
+  async action(data: FormKitData) {
     await api.post('/users/', {
       username: data.username,
       email: data.email,
@@ -41,7 +46,7 @@ class RegisterSubmitter extends FormKitSubmitter {
 // Node is wired in via @submit's second arg; start with whatever exists.
 const submitter = new RegisterSubmitter(getNode('registerForm'))
 
-function onSubmit(data, node) {
+function onSubmit(data: FormKitData, node: FormKitNode) {
   successMessage.value = ''
   return submitter.submit(data, node)
 }

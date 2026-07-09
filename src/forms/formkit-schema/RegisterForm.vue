@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 // Schema-driven FormKit: the same fields are described as a JSON-ish schema
 // array and rendered with <FormKitSchema>. Each node's `$formkit` picks the
 // (Vuetify-bridged) input type; the rest are that input's props. All wiring is

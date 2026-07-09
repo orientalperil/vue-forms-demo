@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import { useRegle } from '@regle/core'
 import {
@@ -10,14 +10,15 @@ import {
   withMessage,
 } from '@regle/rules'
 
-import { api } from '@/shared/api.js'
-import { makeSampleUser } from '@/shared/sampleData.js'
-import { RegleSubmitter } from './RegleSubmitter.js'
+import { api } from '@/shared/api.ts'
+import { makeSampleUser } from '@/shared/sampleData.ts'
+import type { RegisterFormValues } from '@/shared/types.ts'
+import { RegleSubmitter } from './RegleSubmitter.ts'
 
 // --- Form state -------------------------------------------------------------
 // We own the reactive state ref and bind inputs to it; Regle watches it for
 // validation. r$ is the read side (errors, validity, server-error channel).
-function emptyState() {
+function emptyState(): RegisterFormValues {
   return {
     username: '',
     email: '',
@@ -65,17 +66,20 @@ const { r$ } = useRegle(
     },
     acceptTerms: {
       // No built-in "accepted" rule — an inline boolean check does it.
-      accepted: withMessage((value) => value === true, 'You must accept the terms'),
+      accepted: withMessage(
+        (value: unknown) => value === true,
+        'You must accept the terms',
+      ),
     },
   },
 )
 
 // --- Submitter --------------------------------------------------------------
-const formError = ref([])
+const formError = ref<string[]>([])
 const successMessage = ref('')
 
-class RegisterSubmitter extends RegleSubmitter {
-  async action(values) {
+class RegisterSubmitter extends RegleSubmitter<RegisterFormValues> {
+  async action(values: RegisterFormValues) {
     await api.post('/users/', {
       username: values.username,
       email: values.email,
@@ -109,7 +113,9 @@ async function onSubmit() {
   if (!valid) return
   isSubmitting.value = true
   try {
-    await submitter.submit(data)
+    // Regle's validated `data` is a deep-optional "safe output" type; once valid
+    // it matches the canonical shape, so narrow it for the Submitter.
+    await submitter.submit(data as RegisterFormValues)
   } finally {
     isSubmitting.value = false
   }

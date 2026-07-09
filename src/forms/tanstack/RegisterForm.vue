@@ -1,16 +1,17 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import { useForm } from '@tanstack/vue-form'
 
-import { api } from '@/shared/api.js'
-import { makeSampleUser } from '@/shared/sampleData.js'
-import { TanStackSubmitter } from './TanStackSubmitter.js'
+import { api } from '@/shared/api.ts'
+import { makeSampleUser } from '@/shared/sampleData.ts'
+import type { RegisterFormValues } from '@/shared/types.ts'
+import { TanStackSubmitter } from './TanStackSubmitter.ts'
 
 const successMessage = ref('')
 
 // The Submitter does the API call and returns DRF errors in TanStack's shape.
-class RegisterSubmitter extends TanStackSubmitter {
-  async action(value) {
+class RegisterSubmitter extends TanStackSubmitter<RegisterFormValues> {
+  async action(value: RegisterFormValues) {
     await api.post('/users/', {
       username: value.username,
       email: value.email,
@@ -31,6 +32,8 @@ class RegisterSubmitter extends TanStackSubmitter {
 const submitter = new RegisterSubmitter()
 
 const form = useForm({
+  // Annotated so `role: null` widens to `Role | null` (not the literal `null`),
+  // which keeps every field path — including `role` — in TanStack's typed API.
   defaultValues: {
     username: '',
     email: '',
@@ -39,7 +42,7 @@ const form = useForm({
     role: null,
     profile: { bio: '' },
     acceptTerms: false,
-  },
+  } as RegisterFormValues,
   validators: {
     // Server submission + DRF error mapping happens here. Returning the
     // { form, fields } object routes messages to the form and each field.
@@ -59,8 +62,14 @@ const formError = form.useStore((state) => {
 
 function fillSample() {
   const { bio, ...sample } = makeSampleUser()
+  // setFieldValue is typed to the known field paths; the sample keys are plain
+  // strings, so use a loosened alias for the dynamic bulk set.
+  const setFieldValueLoose = form.setFieldValue as unknown as (
+    name: string,
+    value: unknown,
+  ) => void
   for (const [name, value] of Object.entries(sample)) {
-    form.setFieldValue(name, value)
+    setFieldValueLoose(name, value)
   }
   // bio lives at the nested path profile.bio (matches the DRF payload).
   form.setFieldValue('profile.bio', bio)
@@ -74,10 +83,14 @@ const roleItems = [
 
 // TanStack stores field errors as an array that may contain strings (server
 // map) or objects (schema validators). Normalize to strings for Vuetify.
-function toMessages(errors) {
-  return (errors ?? [])
-    .filter(Boolean)
-    .map((e) => (typeof e === 'string' ? e : (e.message ?? String(e))))
+function toMessages(errors: readonly unknown[] | undefined): string[] {
+  return (errors ?? []).filter(Boolean).map((e) => {
+    if (typeof e === 'string') return e
+    if (e && typeof e === 'object' && 'message' in e) {
+      return String((e as { message: unknown }).message)
+    }
+    return String(e)
+  })
 }
 </script>
 
@@ -237,7 +250,7 @@ function toMessages(errors) {
           :model-value="field.state.value"
           label="I accept the terms and conditions"
           :error-messages="toMessages(field.state.meta.errors)"
-          @update:model-value="field.handleChange"
+          @update:model-value="(v) => field.handleChange(v ?? false)"
           @blur="field.handleBlur"
         />
       </template>
