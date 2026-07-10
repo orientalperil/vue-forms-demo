@@ -15,7 +15,7 @@
  */
 import type { Ref } from 'vue'
 
-import { parseDrfError } from '@/shared/parseDrfError.ts'
+import { parseDrfError } from 'django-rest-framework-helpers/submitters/parseDrfError'
 import type { RegisterFormValues } from '@/shared/types.ts'
 
 /**

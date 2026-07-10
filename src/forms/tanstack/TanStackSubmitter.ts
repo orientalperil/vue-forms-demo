@@ -20,7 +20,7 @@
  * Note: TanStack's field error map stores one value per channel, so multiple
  * messages for a field are joined with a space here.
  */
-import { parseDrfError } from '@/shared/parseDrfError.ts'
+import { parseDrfError } from 'django-rest-framework-helpers/submitters/parseDrfError'
 import type { RegisterFormValues } from '@/shared/types.ts'
 
 /** The { form, fields } shape TanStack routes to its form/field error maps. */
