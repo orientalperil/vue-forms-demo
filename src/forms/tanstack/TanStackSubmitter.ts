@@ -20,7 +20,8 @@
  * Note: TanStack's field error map stores one value per channel, so multiple
  * messages for a field are joined with a space here.
  */
-import type { ApiError, RegisterFormValues } from '@/shared/types.ts'
+import { parseDrfError } from '@/shared/parseDrfError.ts'
+import type { RegisterFormValues } from '@/shared/types.ts'
 
 /** The { form, fields } shape TanStack routes to its form/field error maps. */
 export interface TanStackSubmitError {
@@ -35,41 +36,20 @@ export class TanStackSubmitter<TValue = RegisterFormValues> {
 
   /** Convert a DRF error response into TanStack's { form, fields } shape. */
   parseError(error: unknown): TanStackSubmitError {
-    const data = (error as ApiError | undefined)?.response?.data
-    if (!data) {
-      return { form: 'Something went wrong. Please try again.' }
-    }
-
-    // Case 1: APIException-style { detail }
-    if (data.detail) {
-      return { form: data.detail }
-    }
-
-    // Case 2 + 3: serializer errors.
-    const { non_field_errors: nonField, ...fieldErrors } = data
+    // TanStack's error map stores one value per channel, so join each field's
+    // (and the form-level) messages into a single space-separated string.
+    const { formLevel, fields } = parseDrfError(error)
 
     const result: TanStackSubmitError = {}
-    if (nonField) {
-      result.form = Array.isArray(nonField) ? nonField.join(' ') : String(nonField)
+    if (formLevel.length > 0) {
+      result.form = formLevel.join(' ')
     }
-
-    const fields: Record<string, string> = {}
-    for (const [field, messages] of Object.entries(fieldErrors)) {
-      if (Array.isArray(messages)) {
-        fields[field] = messages.join(' ')
-      } else if (messages && typeof messages === 'object') {
-        // Flatten nested serializer -> dotted field names (e.g. 'profile.bio').
-        for (const [sub, subMessages] of Object.entries(messages)) {
-          fields[`${field}.${sub}`] = Array.isArray(subMessages)
-            ? subMessages.join(' ')
-            : String(subMessages)
-        }
-      } else if (messages != null) {
-        fields[field] = String(messages)
-      }
+    const joined: Record<string, string> = {}
+    for (const [field, messages] of Object.entries(fields)) {
+      joined[field] = messages.join(' ')
     }
-    if (Object.keys(fields).length > 0) {
-      result.fields = fields
+    if (Object.keys(joined).length > 0) {
+      result.fields = joined
     }
     return result
   }

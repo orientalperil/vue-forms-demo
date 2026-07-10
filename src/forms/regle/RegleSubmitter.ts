@@ -21,7 +21,8 @@
  */
 import type { Ref } from 'vue'
 
-import type { ApiError, RegisterFormValues } from '@/shared/types.ts'
+import { parseDrfError } from '@/shared/parseDrfError.ts'
+import type { RegisterFormValues } from '@/shared/types.ts'
 
 /** Regle's external-error tree: field -> messages, one level of nesting deep. */
 type RegleErrorTree = Record<string, string[] | Record<string, string[]>>
@@ -45,41 +46,23 @@ export class RegleSubmitter<TValues = RegisterFormValues> {
   }
 
   handleError(error: unknown) {
-    const data = (error as ApiError | undefined)?.response?.data
-    if (!data) {
-      // Network error, timeout, CORS, etc. — no structured body.
-      this.formError.value = ['Something went wrong. Please try again.']
-      return
-    }
+    // Form-level messages go to our own ref (Regle has no non-field slot).
+    const { formLevel, fields } = parseDrfError(error)
+    this.formError.value = formLevel
 
-    // Case 1: APIException-style { detail: "..." }
-    if (data.detail) {
-      this.formError.value = [data.detail]
-      return
-    }
-
-    // Case 2 + 3: serializer errors. Split non-field from field errors.
-    const { non_field_errors: nonField, ...fieldErrors } = data
-
-    if (nonField) {
-      this.formError.value = Array.isArray(nonField) ? nonField : [nonField]
-    }
-
-    // Build Regle's external-error tree. Each field maps to a string[]; a
-    // nested serializer error (profile.bio) becomes a nested object, which
-    // Regle merges into the matching field path.
+    // Regle wants a nested external-error tree, so un-flatten the normalized
+    // dotted paths (profile.bio -> { profile: { bio: [...] } }); Regle merges
+    // each nested object into the matching field path.
     const tree: RegleErrorTree = {}
-    for (const [field, messages] of Object.entries(fieldErrors)) {
-      if (Array.isArray(messages)) {
-        tree[field] = messages
-      } else if (messages && typeof messages === 'object') {
-        const nested: Record<string, string[]> = {}
-        for (const [sub, subMessages] of Object.entries(messages)) {
-          nested[sub] = Array.isArray(subMessages) ? subMessages : [subMessages]
-        }
-        tree[field] = nested
-      } else if (messages != null) {
-        tree[field] = [String(messages)]
+    for (const [path, messages] of Object.entries(fields)) {
+      const dot = path.indexOf('.')
+      if (dot === -1) {
+        tree[path] = messages
+      } else {
+        const parent = path.slice(0, dot)
+        const child = path.slice(dot + 1)
+        const nested = (tree[parent] ??= {}) as Record<string, string[]>
+        nested[child] = messages
       }
     }
     if (Object.keys(tree).length > 0) {
