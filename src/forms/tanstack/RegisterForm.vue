@@ -4,7 +4,7 @@ import { useForm } from '@tanstack/vue-form'
 
 import { api } from '@/shared/api.ts'
 import { makeSampleUser } from '@/shared/sampleData.ts'
-import type { RegisterFormValues } from '@/shared/types.ts'
+import type { RegisterFormValues, Role } from '@/shared/types.ts'
 import { TanStackSubmitter } from './TanStackSubmitter.ts'
 
 const successMessage = ref('')
@@ -32,17 +32,18 @@ class RegisterSubmitter extends TanStackSubmitter<RegisterFormValues> {
 const submitter = new RegisterSubmitter()
 
 const form = useForm({
-  // Annotated so `role: null` widens to `Role | null` (not the literal `null`),
-  // which keeps every field path — including `role` — in TanStack's typed API.
   defaultValues: {
     username: '',
     email: '',
     password: '',
     passwordConfirm: '',
-    role: null,
+    // `null` alone infers as the literal type `null`, which would drop `role`
+    // from TanStack's typed field paths — widen it so the field API stays intact.
+    // (Widening to a superset is safe; the other fields keep their inferred types.)
+    role: null as Role | null,
     profile: { bio: '' },
     acceptTerms: false,
-  } as RegisterFormValues,
+  },
   validators: {
     // Server submission + DRF error mapping happens here. Returning the
     // { form, fields } object routes messages to the form and each field.
