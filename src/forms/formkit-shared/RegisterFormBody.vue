@@ -16,7 +16,7 @@ import type { FormKitNode } from '@formkit/core'
 
 import { api } from '@/shared/api.ts'
 import { makeSampleUser } from '@/shared/sampleData.ts'
-import { FormKitSubmitter } from './FormKitSubmitter.ts'
+import { FormKitSubmitter } from 'django-rest-framework-helpers/submitters/formkit'
 
 const successMessage = ref('')
 
