@@ -246,6 +246,10 @@ function toMessages(errors: readonly unknown[] | undefined): string[] {
       }"
     >
       <template #default="{ field }">
+        <!--
+          Vuetify's checkbox emits `boolean | null`, but the field value is a
+          plain boolean — coerce the null case to false before handleChange.
+        -->
         <v-checkbox
           :model-value="field.state.value"
           label="I accept the terms and conditions"
