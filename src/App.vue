@@ -48,7 +48,7 @@ const current = computed<string | undefined>({
 /*
  * The FormKit variants bridge every field to a Vuetify component that renders
  * its own label AND its own error messages (via :label / :error-messages in
- * VuetifyInput). FormKit's default input schema still emits its own label and
+ * formkit-heads' Input). FormKit's default input schema still emits its own label and
  * help sections per field, producing a doubled label. Hide them so Vuetify is
  * the sole renderer.
  */
